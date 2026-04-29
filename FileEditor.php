@@ -1,15 +1,19 @@
 <?php
 /**
- * Plugin Name:       Aide - Config File Editor
+ * Plugin Name:       Aide :: Config File Editor
  * Plugin URI:        https://aide247.com/
  * Description:       Edit the site's `wp-config.php` file from the WordPress admin.
  * Version:           1.0.0
+ * Requires at least: 5.8
+ * Requires PHP:      7.4
  * Author:            Aide247
  * Author URI:        https://aide247.com/
- * Text Domain:       aideconfigfileeditor
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       aide-config-file-editor
  * Domain Path:       /languages
  *
- * @package aideconfigfileeditor
+ * @package aide_config_file_editor
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -37,8 +41,8 @@ add_action( 'admin_menu', 'aide_config_file_editor_register_menu' );
  */
 function aide_config_file_editor_register_menu(): void {
 	add_menu_page(
-		__( 'Config File Editor', 'aideconfigfileeditor' ),
-		__( 'Config File Editor', 'aideconfigfileeditor' ),
+		__( 'Config File Editor', 'aide-config-file-editor' ),
+		__( 'Config File Editor', 'aide-config-file-editor' ),
 		'manage_options',
 		AIDE_CONFIG_FILE_EDITOR_SLUG,
 		'aide_config_file_editor_render_page',
@@ -53,13 +57,13 @@ function aide_config_file_editor_register_menu(): void {
  */
 function aide_config_file_editor_render_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to edit this file.', 'aideconfigfileeditor' ) );
+		wp_die( esc_html__( 'Sorry, you are not allowed to edit this file.', 'aide-config-file-editor' ) );
 	}
 
 	$file = trailingslashit( ABSPATH ) . 'wp-config.php';
 
 	if ( ! file_exists( $file ) ) {
-		echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'wp-config.php was not found.', 'aideconfigfileeditor' ) . '</strong></p></div>';
+		echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'wp-config.php was not found.', 'aide-config-file-editor' ) . '</strong></p></div>';
 		return;
 	}
 
@@ -72,11 +76,11 @@ function aide_config_file_editor_render_page(): void {
 
 		$valid = ( '' !== trim( $new_content ) ) && ( false !== strpos( $new_content, '<?php' ) );
 		if ( ! $valid ) {
-			echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'Invalid content. A PHP opening tag (`<?php`) is required.', 'aideconfigfileeditor' ) . '</strong></p></div>';
+			echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'Invalid content. A PHP opening tag (`<?php`) is required.', 'aide-config-file-editor' ) . '</strong></p></div>';
 		} else {
 			$write_result = aide_config_file_editor_write_file( $file, $new_content );
 			if ( true === $write_result ) {
-				echo '<div class="notice notice-success"><p><strong>' . esc_html__( 'File saved successfully.', 'aideconfigfileeditor' ) . '</strong></p></div>';
+				echo '<div class="notice notice-success"><p><strong>' . esc_html__( 'File saved successfully.', 'aide-config-file-editor' ) . '</strong></p></div>';
 			} else {
 				echo '<div class="notice notice-error"><p><strong>' . esc_html( $write_result ) . '</strong></p></div>';
 			}
@@ -96,7 +100,7 @@ function aide_config_file_editor_render_page(): void {
 
 	?>
 	<div class="wrap">
-		<h1><?php echo esc_html__( 'Edit wp-config.php', 'aideconfigfileeditor' ); ?></h1>
+		<h1><?php echo esc_html__( 'Edit wp-config.php', 'aide-config-file-editor' ); ?></h1>
 
 		<form id="aide-config-file-editor-form" action="" method="post">
 			<?php wp_nonce_field( AIDE_CONFIG_FILE_EDITOR_NONCE_ACTION ); ?>
@@ -110,11 +114,11 @@ function aide_config_file_editor_render_page(): void {
 			><?php echo esc_textarea( $current_content ); ?></textarea>
 
 			<p class="description" id="aide-config-file-editor-description">
-				<?php echo esc_html__( 'Edit your wp-config.php file with caution. A syntax error can bring your site down.', 'aideconfigfileeditor' ); ?>
+				<?php echo esc_html__( 'Edit your wp-config.php file with caution. A syntax error can bring your site down.', 'aide-config-file-editor' ); ?>
 			</p>
 
 			<p class="submit">
-				<input type="submit" class="button button-primary" value="<?php echo esc_attr__( 'Save Changes', 'aideconfigfileeditor' ); ?>">
+				<input type="submit" class="button button-primary" value="<?php echo esc_attr__( 'Save Changes', 'aide-config-file-editor' ); ?>">
 			</p>
 		</form>
 	</div>
@@ -143,21 +147,21 @@ function aide_config_file_editor_write_file( string $file_path, string $contents
 
 	$credentials = request_filesystem_credentials( admin_url() );
 	if ( false === $credentials ) {
-		return __( 'Filesystem credentials are required to write wp-config.php.', 'aideconfigfileeditor' );
+		return __( 'Filesystem credentials are required to write wp-config.php.', 'aide-config-file-editor' );
 	}
 
 	if ( ! WP_Filesystem( $credentials ) ) {
-		return __( 'Could not initialize the WordPress filesystem.', 'aideconfigfileeditor' );
+		return __( 'Could not initialize the WordPress filesystem.', 'aide-config-file-editor' );
 	}
 
 	global $wp_filesystem;
 
 	if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
-		return __( 'WordPress filesystem is unavailable.', 'aideconfigfileeditor' );
+		return __( 'WordPress filesystem is unavailable.', 'aide-config-file-editor' );
 	}
 
 	if ( ! $wp_filesystem->put_contents( $file_path, $contents, FS_CHMOD_FILE ) ) {
-		return __( 'Unable to write to wp-config.php. Please check file permissions.', 'aideconfigfileeditor' );
+		return __( 'Unable to write to wp-config.php. Please check file permissions.', 'aide-config-file-editor' );
 	}
 
 	return true;
